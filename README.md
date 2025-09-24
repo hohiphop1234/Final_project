@@ -1,17 +1,31 @@
-# Movie Recommendation System
+# 🎬 Advanced Movie Recommender System
 
-A content-based movie recommendation system using the MovieLens 100K dataset. The system uses TF-IDF vectorization and cosine similarity to recommend movies based on genre similarity, with both a Streamlit web interface and Jupyter notebook implementation.
+A content-based movie recommendation system using the MovieLens 100K dataset. The system uses TF-IDF vectorization and cosine similarity to recommend movies based on genre similarity, with both a Streamlit web interface and comprehensive analysis tools.
 
-## Features
+## ✨ Features
 
+### 🔍 **Movie Search & Recommend**
 - **Content-based recommendations** using TF-IDF and cosine similarity
 - **Interactive Streamlit web app** with movie posters
-- **Jupyter notebook** for data exploration and development
-- **Standalone Python script** for command-line usage
 - **Movie search functionality** with fuzzy matching
-- **Data visualization** and analysis tools
+- Hiển thị poster và thông tin chi tiết với similarity scores
 
-## Setup Instructions
+### 🎭 **Browse by Genre** 
+- **Data visualization** and analysis tools
+- Duyệt phim theo thể loại yêu thích
+- Hỗ trợ 19 thể loại từ Action đến Western
+
+### 📊 **Dataset Analytics**
+- Thống kê tổng quan dataset MovieLens 100K
+- Biểu đồ phân tích genres và năm phát hành
+- **Jupyter notebook** for data exploration and development
+
+### 🎯 **Hybrid Recommendations**
+- Kết hợp content-based với user preferences
+- Cá nhân hóa dựa trên thể loại và thời gian yêu thích
+- **Standalone Python script** for command-line usage
+
+## 🚀 Setup Instructions
 
 ### 1. Clone the Repository
 ```bash
@@ -86,7 +100,9 @@ Run the interactive web interface:
 streamlit run app.py
 ```
 
-Then open your browser to `http://localhost:8501` to:
+Truy cập: `http://localhost:8501`
+
+Then open your browser to view:
 - Search for movies in the sidebar
 - View movie recommendations with posters
 - Explore similar movies based on genre similarity
@@ -107,6 +123,19 @@ This provides:
 - Dataset information and statistics
 - Sample recommendations
 - Interactive command-line interface
+
+## 🧠 Core Algorithm
+
+**Content-Based Filtering** với **TF-IDF** và **Cosine Similarity**:
+- Vectorize movie genres sử dụng TF-IDF
+- Tính cosine similarity matrix 
+- Recommend top-N phim tương tự nhất
+- Hybrid approach với user preferences
+
+## 📊 Dataset: MovieLens 100K
+- **1,682 phim** với 19 thể loại
+- **100,000 ratings** từ 943 users
+- Thời gian: 1995-1998
 
 ## Project Structure
 
