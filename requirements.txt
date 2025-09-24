@@ -18,3 +18,8 @@ ipykernel>=6.20.0
 
 # Additional useful libraries for data science
 scipy>=1.10.0
+
+# Web UI and HTTP
+streamlit>=1.36.0
+requests>=2.32.0
+python-dotenv>=1.0.1
