@@ -11,13 +11,13 @@ from poster_service import get_poster_url
 
 
 @st.cache_data(show_spinner=False)
-def load_context() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def load_context():
     movies_df, ratings, users = load_data()
     cosine_sim, indices = build_similarity_matrix(movies_df)
     return movies_df, (cosine_sim, indices)
 
 
-def _render_movie_row(title: str, genres: str, year: int):
+def _render_movie_row(title: str, genres: str, year):
     cols = st.columns([1, 3])
     poster = get_poster_url(title, year)
     with cols[0]:
@@ -63,8 +63,14 @@ def main():
         st.divider()
         st.subheader(f"Because you searched: {seed_title}")
         recs = recommend(seed_title, movies_df, cosine_sim, indices, top_n=topn)
-        for _, row in recs.iterrows():
-            _render_movie_row(row["title"], row.get("genres", ""), movies_df.loc[row.name, "year"])  # use index for year
+        
+        # Display recommendations safely
+        if isinstance(recs, pd.DataFrame) and not recs.empty:
+            for _, row in recs.iterrows():
+                # Safely get year from movies_df by matching title
+                year_match = movies_df[movies_df['title'] == row['title']]
+                year = year_match['year'].iloc[0] if not year_match.empty else None
+                _render_movie_row(row["title"], row.get("genres", ""), year)
 
 
 if __name__ == "__main__":
