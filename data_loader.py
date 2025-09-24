@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 from config import MOVIES_PATH, RATINGS_PATH, USERS_PATH, MOVIE_COLS, GENRE_COLS
-from utils import extract_year, row_genres
+from utils import extract_year, row_genres, normalize_title
 
 def load_data():
     movies = pd.read_csv(MOVIES_PATH, sep="|", encoding="latin-1", header=None, names=MOVIE_COLS)
@@ -16,6 +16,7 @@ def load_data():
     movies["genres"] = movies.apply(lambda row: row_genres(row, GENRE_COLS), axis=1)
     movies["year"] = movies["title"].apply(extract_year)
     movies["title"] = movies["title"].str.replace(r"\s*\(\d{4}\)\s*$", "", regex=True)
+    movies["title"] = movies["title"].apply(normalize_title)  # Fix article placement
     movies_df = movies[["movieId","title","genres","year"]]
     
     return movies_df, ratings, users
