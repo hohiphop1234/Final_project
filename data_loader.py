@@ -16,7 +16,7 @@ def load_data():
     movies["genres"] = movies.apply(lambda row: row_genres(row, GENRE_COLS), axis=1)
     movies["year"] = movies["title"].apply(extract_year)
     movies["title"] = movies["title"].str.replace(r"\s*\(\d{4}\)\s*$", "", regex=True)
-    movies["title"] = movies["title"].apply(normalize_title)  # Fix article placement
+    movies["title"] = movies["title"].apply(normalize_title)  
     movies_df = movies[["movieId","title","genres","year"]]
     
     return movies_df, ratings, users
