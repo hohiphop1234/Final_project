@@ -15,6 +15,12 @@ def recommend(title, movies_df, cosine_sim, indices, top_n=10):
         return f"Phim '{title}' không có trong dataset."
     idx = indices[title]
     sim_scores = list(enumerate(cosine_sim[idx]))
-    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:top_n+1]
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    
+    # Loại bỏ chính phim được tìm kiếm (theo index, không phải vị trí đầu tiên)
+    sim_scores = [(i, score) for i, score in sim_scores if i != idx]
+    
+    # Lấy top_n phim tương tự nhất
+    sim_scores = sim_scores[:top_n]
     movie_indices = [i[0] for i in sim_scores]
     return movies_df.iloc[movie_indices][['title','genres']]

@@ -11,7 +11,7 @@ def main():
     print(get_movie_data(1, movies_df))
     
     cosine_sim, indices = build_similarity_matrix(movies_df)
-    print(recommend("Toy Story", movies_df, cosine_sim, indices, top_n=5))
+    print(recommend("Balto", movies_df, cosine_sim, indices, top_n=5))
 
 if __name__ == "__main__":
     main()
