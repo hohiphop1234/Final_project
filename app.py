@@ -13,7 +13,7 @@ from poster_service import get_poster_url
 @st.cache_data(show_spinner=False)
 def load_context():
     movies_df, ratings, users = load_data()
-    cosine_sim, indices = build_similarity_matrix(movies_df)
+    cosine_sim, indices, _, _ = build_similarity_matrix(movies_df)
     return movies_df, (cosine_sim, indices)
 
 

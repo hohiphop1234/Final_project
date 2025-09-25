@@ -11,6 +11,8 @@ def load_data():
     
     # Drop unneeded cols
     movies = movies.drop(["video_release_date", "IMDb_URL"], axis=1)
+    ratings = ratings.drop(["timestamp"], axis=1)
+    users = users.drop(["zip_code"], axis=1)
     
     # Process movies
     movies["genres"] = movies.apply(lambda row: row_genres(row, GENRE_COLS), axis=1)

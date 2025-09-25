@@ -45,5 +45,3 @@ def get_poster_url(title: str, year: Optional[int] = None) -> Optional[str]:
         return None
     except Exception:
         return None
-
-
