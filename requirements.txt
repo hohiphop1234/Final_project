@@ -5,6 +5,10 @@ numpy>=1.24.0
 # Machine learning and preprocessing
 scikit-learn>=1.3.0
 
+# Fuzzy string matching for search
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.12.0  # For faster fuzzy matching
+
 # Web framework for UI
 streamlit>=1.28.0
 

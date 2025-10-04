@@ -17,14 +17,29 @@ from poster_service import get_poster_url
 
 @st.cache_data(show_spinner=False)
 def load_context() -> Tuple[pd.DataFrame, Tuple, pd.DataFrame, pd.DataFrame]:
-    movies_df, ratings, users = load_data()
-    cosine_sim, indices = build_similarity_matrix(movies_df)
-    return movies_df, (cosine_sim, indices), ratings, users
+    try:
+        movies_df, ratings, users = load_data()
+        cosine_sim, indices = build_similarity_matrix(movies_df)
+        
+        # Handle case where similarity matrix building failed
+        if cosine_sim is None or indices is None:
+            st.warning("⚠️ Could not build similarity matrix. Some features may be limited.")
+            # Create empty similarity matrix and indices
+            cosine_sim = None
+            indices = pd.Series(movies_df.index, index=movies_df['title'].fillna('unknown')).drop_duplicates()
+            
+        return movies_df, (cosine_sim, indices), ratings, users
+        
+    except Exception as e:
+        st.error(f"❌ Error loading data: {e}")
+        # Return empty data structures
+        empty_df = pd.DataFrame()
+        return empty_df, (None, pd.Series()), empty_df, empty_df
 
 
-def _render_movie_row(title: str, genres: str, year: int, similarity_score: float = None):
+def _render_movie_row(title: str, genres: str, year: int, similarity_score: float = None, avg_rating: float = None, rating_count: int = None, confidence_score: float = None):
     """Render movie với poster và thông tin"""
-    cols = st.columns([1, 3, 1])
+    cols = st.columns([1, 3, 1, 1])
     poster = get_poster_url(title, year)
     
     with cols[0]:
@@ -40,9 +55,20 @@ def _render_movie_row(title: str, genres: str, year: int, similarity_score: floa
             meta.append(f"📅 {int(year)}")
         if genres:
             meta.append(f"🎭 {genres}")
+        
+        # Hiển thị confidence score nếu có
+        if confidence_score is not None and confidence_score < 100:
+            meta.append(f"🎯 Match: {confidence_score:.0f}%")
+            
         st.caption(" • ".join(meta))
     
     with cols[2]:
+        if avg_rating is not None and not pd.isna(avg_rating):
+            st.metric("Rating", f"⭐ {avg_rating:.1f}/5")
+            if rating_count is not None and not pd.isna(rating_count):
+                st.caption(f"({int(rating_count)} reviews)")
+    
+    with cols[3]:
         if similarity_score is not None:
             st.metric("Similarity", f"{similarity_score:.1%}")
 
@@ -136,25 +162,45 @@ def main():
                 st.warning("❌ No matching movies found. Try a different title!")
                 return
             
+            # Kiểm tra nếu có fuzzy matches
+            has_fuzzy_matches = 'confidence_score' in results.columns and (results['confidence_score'] < 100).any()
+            
+            if has_fuzzy_matches:
+                st.info("🔍 Using smart search to find similar movie titles...")
+            
             st.success(f"✅ Found {len(results)} matching movies")
             
             # Show search results
             with st.expander("📋 Search Results", expanded=True):
                 for _, row in results.iterrows():
-                    _render_movie_row(row["title"], row["genres"], row["year"])
+                    _render_movie_row(
+                        row["title"], row["genres"], row["year"], 
+                        avg_rating=row.get("avg_rating"), 
+                        rating_count=row.get("rating_count"),
+                        confidence_score=row.get("confidence_score")
+                    )
             
             # Recommendations
             seed_title = results.iloc[0]["title"]
             st.header(f"🎯 Because you searched: *{seed_title}*")
             
-            recs = recommend(seed_title, movies_df, cosine_sim, indices, top_n=topn, return_scores=True)
-            
-            if not recs.empty:
-                for _, row in recs.iterrows():
-                    similarity = row.get('similarity_score', None)
-                    _render_movie_row(row["title"], row["genres"], row["year"], similarity)
+            # Check if we have valid similarity matrix
+            if cosine_sim is not None:
+                recs = recommend(seed_title, movies_df, cosine_sim, indices, top_n=topn, return_scores=True)
+                
+                if not recs.empty:
+                    for _, row in recs.iterrows():
+                        similarity = row.get('similarity_score', None)
+                        _render_movie_row(
+                            row["title"], row["genres"], row["year"], 
+                            similarity_score=similarity,
+                            avg_rating=row.get("avg_rating"), 
+                            rating_count=row.get("rating_count")
+                        )
+                else:
+                    st.info("No recommendations found for this movie.")
             else:
-                st.info("No recommendations found for this movie.")
+                st.warning("⚠️ Recommendation engine not available. Please check data loading.")
     
     elif page == "🎭 Browse by Genre":
         st.header("Browse Movies by Genre")
@@ -175,8 +221,13 @@ def main():
                 st.success(f"Found {len(genre_movies)} {selected_genre} movies")
                 
                 for _, row in genre_movies.iterrows():
-                    score = row.get('genre_score', 1)
-                    _render_movie_row(row["title"], row["genres"], row["year"], score/max(genre_movies['genre_score']))
+                    final_score = row.get('final_score', 0)
+                    _render_movie_row(
+                        row["title"], row["genres"], row["year"], 
+                        similarity_score=final_score,
+                        avg_rating=row.get("avg_rating"), 
+                        rating_count=row.get("rating_count")
+                    )
             else:
                 st.warning(f"No {selected_genre} movies found!")
     
@@ -221,21 +272,29 @@ def main():
         
         if st.button("🎯 Get Personalized Recommendations"):
             if movie_title.strip():
-                hybrid_recs = hybrid_recommend(
-                    movie_title, movies_df, cosine_sim, indices, 
-                    user_preferences=user_prefs, top_n=num_recs
-                )
-                
-                if isinstance(hybrid_recs, str):
-                    st.error(hybrid_recs)
-                elif not hybrid_recs.empty:
-                    st.success("🎉 Here are your personalized recommendations!")
+                if cosine_sim is not None:
+                    hybrid_recs = hybrid_recommend(
+                        movie_title, movies_df, cosine_sim, indices, 
+                        user_preferences=user_prefs, top_n=num_recs
+                    )
                     
-                    for _, row in hybrid_recs.iterrows():
-                        final_score = row.get('final_score', row.get('similarity_score', 0))
-                        _render_movie_row(row["title"], row["genres"], row["year"], final_score)
+                    if isinstance(hybrid_recs, str):
+                        st.error(hybrid_recs)
+                    elif not hybrid_recs.empty:
+                        st.success("🎉 Here are your personalized recommendations!")
+                        
+                        for _, row in hybrid_recs.iterrows():
+                            final_score = row.get('final_score', row.get('similarity_score', 0))
+                            _render_movie_row(
+                                row["title"], row["genres"], row["year"], 
+                                similarity_score=final_score,
+                                avg_rating=row.get("avg_rating"), 
+                                rating_count=row.get("rating_count")
+                            )
+                    else:
+                        st.warning("No recommendations found!")
                 else:
-                    st.warning("No recommendations found!")
+                    st.warning("⚠️ Personalized recommendations not available. Please check data loading.")
     
     # Footer
     st.markdown("---")

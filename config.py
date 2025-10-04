@@ -13,3 +13,24 @@ GENRE_COLS = [
     "Drama","Fantasy","Film-Noir","Horror","Musical","Mystery","Romance","Sci-Fi","Thriller","War","Western"
 ]
 MOVIE_COLS = ["movieId","title","release_date","video_release_date","IMDb_URL"] + GENRE_COLS
+
+# Recommendation constants
+DEFAULT_MIN_RATING = 3.0
+DEFAULT_MIN_RATING_COUNT = 5
+DEFAULT_TOP_N = 10
+
+# Fuzzy search constants
+FUZZY_MIN_SCORE = 50
+FUZZY_CONFIDENCE_THRESHOLD = 60
+
+# Scoring weights
+GENRE_WEIGHT = 0.4
+RATING_WEIGHT = 0.6
+
+# Hybrid recommendation weights
+SIMILARITY_WEIGHT = 0.5
+RATING_SCORE_WEIGHT = 0.3
+PREFERENCE_WEIGHT = 0.2
+
+# Performance settings
+TFIDF_MAX_FEATURES = 1000
