@@ -26,7 +26,3 @@ def clean_title_for_search(title: str) -> str:
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     
     return cleaned
-
-def similarity_to_percentage(score: float) -> str:
-    """Chuyển similarity score thành percentage string"""
-    return f"{score * 100:.1f}%"

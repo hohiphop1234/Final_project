@@ -73,3 +73,20 @@ def save_processed(movies_df, ratings, users, out_dir="processed"):
     users.to_csv(users_csv, index=False)
     
     return movies_csv, ratings_csv, users_csv
+
+# Run this function to loading and saving data
+def main():
+    print("Loading data...")
+    movies_df, ratings, users = load_data()
+    print(f"Movies loaded: {len(movies_df)}")
+    print(f"Ratings loaded: {len(ratings)}")
+    print(f"Users loaded: {len(users)}")
+    
+    print("Saving processed data...")
+    movies_csv, ratings_csv, users_csv = save_processed(movies_df, ratings, users)
+    print(f"Saved movies to: {movies_csv}")
+    print(f"Saved ratings to: {ratings_csv}")
+    print(f"Saved users to: {users_csv}")
+
+if __name__ == "__main__":
+    main()
